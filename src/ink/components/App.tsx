@@ -227,11 +227,11 @@ export default class App extends PureComponent<Props, State> {
         // The buffered text is preserved for REPL.tsx via consumeEarlyInput().
         stopCapturingEarlyInput();
         stdin.ref();
-        // Windows consoles can leave stdin paused even after raw mode is set.
-        // Explicitly resuming keeps `readable` events flowing cross-platform.
-        stdin.resume();
         stdin.setRawMode(true);
         stdin.addListener('readable', this.handleReadable);
+        // Windows consoles can leave stdin paused even after raw mode is set.
+        // Resume after attaching the listener so input doesn't wake up early.
+        stdin.resume();
         // Enable bracketed paste mode
         this.props.stdout.write(EBP);
         // Enable terminal focus reporting (DECSET 1004)

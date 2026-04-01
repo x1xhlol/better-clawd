@@ -48,7 +48,6 @@ export function startCapturingEarlyInput(): void {
     process.stdin.setEncoding('utf8')
     process.stdin.setRawMode(true)
     process.stdin.ref()
-    process.stdin.resume()
 
     readableHandler = () => {
       let chunk = process.stdin.read()
@@ -61,6 +60,7 @@ export function startCapturingEarlyInput(): void {
     }
 
     process.stdin.on('readable', readableHandler)
+    process.stdin.resume()
   } catch {
     // If we can't set raw mode, just silently continue without early capture
     isCapturing = false
