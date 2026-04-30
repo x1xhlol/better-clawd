@@ -1,5 +1,6 @@
 import type { ChildProcess, ExecFileException } from 'child_process'
 import { execFile, spawn } from 'child_process'
+import { existsSync } from 'fs'
 import memoize from 'lodash-es/memoize.js'
 import { homedir } from 'os'
 import * as path from 'path'
@@ -60,6 +61,12 @@ const getRipgrepConfig = memoize((): RipgrepConfig => {
     process.platform === 'win32'
       ? path.resolve(rgRoot, `${process.arch}-win32`, 'rg.exe')
       : path.resolve(rgRoot, `${process.arch}-${process.platform}`, 'rg')
+
+  // Fall back to system rg when the vendor binary is absent (e.g. npm installs
+  // that don't ship the vendor/ directory alongside dist/cli.mjs).
+  if (!existsSync(command)) {
+    return { mode: 'system', command: 'rg', args: [] }
+  }
 
   return { mode: 'builtin', command, args: [] }
 })
