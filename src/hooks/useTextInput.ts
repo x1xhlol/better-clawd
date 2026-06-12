@@ -244,6 +244,11 @@ export function useTextInput({
     ['y', handleYankPop],
   ])
 
+  /**
+   * Handle the Return key. Inserts a newline when the user requested one
+   * (backslash+Return, Meta/Shift+Return, or a Shift held on Apple Terminal,
+   * detected natively); otherwise submits the current value via onSubmit.
+   */
   function handleEnter(key: Key) {
     if (
       multiline &&
