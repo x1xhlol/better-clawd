@@ -28,9 +28,22 @@ export function isModifierPressed(modifier: ModifierKey): boolean {
   if (process.platform !== 'darwin') {
     return false
   }
-  // Dynamic import to avoid loading native module at top level
-  const { isModifierPressed: nativeIsModifierPressed } =
+  // Fail safe: if the native module is missing, stubbed, or throws, treat the
+  // modifier as not pressed. This function is called from the Enter handler on
+  // every keystroke — an uncaught throw here kills Enter entirely (the build
+  // stubs `modifiers-napi` with only a default export, so the named import
+  // below is undefined and calling it throws "is not a function").
+  try {
+    // Dynamic import to avoid loading native module at top level
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    require('modifiers-napi') as { isModifierPressed: (m: string) => boolean }
-  return nativeIsModifierPressed(modifier)
+    const native = require('modifiers-napi') as {
+      isModifierPressed?: (m: string) => boolean
+    }
+    if (typeof native?.isModifierPressed !== 'function') {
+      return false
+    }
+    return native.isModifierPressed(modifier) === true
+  } catch {
+    return false
+  }
 }
